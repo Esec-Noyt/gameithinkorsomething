@@ -1,0 +1,541 @@
+import javax.swing.*;
+import java.util.*;
+import java.awt.*;
+
+public class Table extends JPanel
+{
+    Die[] cup;
+    Driver drive;
+    Check checking;
+    Table surface;
+    
+    public boolean playerTurn2 = false;
+    final int SIZE = 5;
+    String[] letters = {"A","B","C","D","E"};
+    public boolean[] lock = {false, false, false, false, false};
+    public int headerSize = 120;
+    public int h = headerSize;
+    Random rand = new Random();
+    public int counter = 1;
+    public int countRolls = 0;
+    public int gameRolls = 0;
+    public int[] whatNumber = {0,0,0,0,0};
+    //public Color e = color.white;
+    public int[] Section = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    public int[] Section1 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    public int[] Section2 = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    //19 needed
+    public boolean[] Check = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    public boolean[] Check1 = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    public boolean[] Check2 = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    public boolean checkWorked = false;
+    public int[] totals = {-1,-1,-1};
+    
+    public int counter2 = 0;
+    public String[] test = {"test1", "test2", "test3", "test4", "test5", "test6","test7", "test8", "test9", "test10","11","12","13","14","15","16","17","18"};
+        public String whosTurn = "tbh idk";
+
+    
+    public Table() 
+    {
+        cup=new Die[SIZE];
+        for(int i = 0; i < SIZE; i++)
+        {
+            cup[i] = new Die();
+        }
+
+        setPreferredSize(new Dimension(485,1120));
+
+        setBackground(new Color(255,255,255));
+    }
+    public void paintComponent(Graphics page)
+    {
+        super.paintComponent(page);
+        Graphics2D g2d = (Graphics2D) page;
+        g2d.setStroke( new BasicStroke(3) );
+        
+        g2d.setColor(Color.lightGray);
+        g2d.fillRoundRect(10,10+h,463,40,0,0);
+        g2d.fillRoundRect(10,410+h,463,40,0,0);
+        g2d.fillRoundRect(0,860+h,485,140,0,0);
+        
+        
+        page.setFont(new Font("Ariel",Font.PLAIN,20));
+        for(int i = 0; i < SIZE; i++)
+        {
+            cup[i].draw(page,i * 100 + 5,880+h, lock[i]);
+            page.drawString(letters[i],i * 100 + 38,985+h);
+        }
+        counter2++;
+        
+        
+        //#page.drawString("This is a score maybe", 50,  200);
+        //#                           (sideways)   <-->   /\ (up,down)
+        
+        
+        g2d.setColor(Color.black);
+        g2d.drawRoundRect(10, 10+h, 463, 840, 0, 0);
+        g2d.drawRoundRect(1,1+h,481,860,0,0); 
+        g2d.drawRoundRect(1,1,481,120,0,0);
+        g2d.drawRoundRect(1,860+h,481,140,0,0);
+
+        String[] text = {"UPPER SECTION","Aces","Twos","Threes","Fours","Fives","Sixes","TOTAL SCORE","BONUS","TOTAL","LOWER SECTION","3 of a kind","4 of a kind","Full House","Sm. Straight","Lg. Straight","YAHTZEE","Chance","TOTAL - Upper","TOTAL - Lower","GRAND TOTAL"};
+        for (int x = 0; x <= 20; x++)
+        {
+            page.drawString(text[x],30,40*x+40+h); 
+        }
+        
+        for (int x = 0; x < 20; x++) //print player1s points
+        {
+            page.drawString(Integer.toString(Section1[x]),280,40*x+80+h);
+        }
+        for (int x = 0; x < 20; x++) //print player2s points
+        {
+            page.drawString(Integer.toString(Section2[x]),380,40*x+80+h);
+        }
+        
+        g2d.setColor(Color.lightGray);
+        g2d.fillRoundRect(200,540,200,30,0,0);  
+        g2d.setColor(Color.black);
+        
+        for (int x = 1; x <= 20; x++)
+        {
+            g2d.drawLine(10,(10+(x*40)+h),473,(10+(x*40)+h));
+        }
+        
+        //virtical lines
+        g2d.drawLine(263,50+h,263,530);
+        g2d.drawLine(363,50+h,363,530);
+
+        g2d.drawLine(263,450+h,263,970);
+        g2d.drawLine(363,450+h,363,970);
+        
+        //draw the logo
+        g2d.setColor(Color.red);
+        g2d.fillRoundRect(90,20,305,80,1000,200);
+        g2d.setColor(Color.white);
+        
+        page.setFont(new Font("what goes here",Font.BOLD,40));
+
+        page.drawString("YAHTZEE",145,75); 
+        
+        page.setFont(new Font("Ariel",Font.PLAIN,20));
+        
+    }
+    public void rollDice()
+    {
+        
+        /**if (counter == 1)      setBackground(new Color(255,0,0));      //red
+        else if (counter == 2) setBackground(new Color(255,128,0));    //orange
+        else if (counter == 3) setBackground(new Color(255,255,0));    //yellow
+        else if (counter == 4) setBackground(new Color(128,255,0));    //greensih
+        else if (counter == 5) setBackground(new Color(0,255,0));      //greenish
+        else if (counter == 6) setBackground(new Color(0,255,128));     //aqua
+        else if (counter == 7) setBackground(new Color(0,255,255));     //no, this is aqua
+        else if (counter == 8) setBackground(new Color(0,128,255));     //blueish
+        else if (counter == 9) setBackground(new Color(0,0,255));       //dark blue
+        else if (counter == 10) setBackground(new Color(128,0,255));    //purpur
+        else if (counter == 11) setBackground(new Color(255,0,255));    //pink
+        else if (counter == 12) setBackground(new Color(255,0,128));    //pinkish red
+            */
+           System.out.println("test1: " + Arrays.toString(lock));
+        int a = -1;
+        for(Die die: cup)
+        {
+            a++;
+            if (lock[a] == false)
+            {
+                die.roll();
+            }
+            for(int i = 0; i < SIZE; i++)
+                {
+                    whatNumber[i] = cup[i].getValue();
+                }
+
+        }
+        repaint();
+
+        counter++;
+        countRolls++;
+        if (counter == 13) counter = 1;
+        if (countRolls % 3 == 0 && countRolls != 0) 
+        {
+            boolean check2 = true;
+            if (playerTurn2 == false) 
+            {
+                playerTurn2 = true;
+                System.out.println("test3: player1");
+                whosTurn = "p1";
+                //bob = new JButton("P1");
+            }
+            else if (playerTurn2 == true) 
+            {
+                playerTurn2 = false;
+                System.out.println("test3: player2");
+                whosTurn = "p2";
+                gameRolls++;
+                //drive.playerPerson = new JButton("P2");
+            }
+            
+            repaint();
+            
+            if (gameRolls > 13)
+            {
+                JOptionPane.showMessageDialog(surface,"Game Has Ended. Please check your scores now.\nExit from this messgae to close the app!");
+                System.exit(1);
+            }
+            
+            do
+            {
+                String test = drive.result();
+            
+                boolean dunno = scoreIsh(test);
+                check2 = dunno;
+            }
+            while (check2 == false); 
+            
+            
+            checkWorked = false;
+                    for(Die die: cup)
+            {
+                if (lock[a] == false)
+                {
+                    die.roll();
+                }
+            }
+        }
+        //#VERY IMPORTANT THING FOR THE NUMBERS
+        
+        
+            Section2[6] = Section2[0] + Section2[1] + Section2[2] + Section2[3] + Section2[4] + Section2[5];
+            Section1[6] = Section1[0] + Section1[1] + Section1[2] + Section1[3] + Section1[4] + Section1[5];
+    
+            if (Section2[6] >= 63)
+            {
+                Section2[7] = 35;
+            }
+            if (Section1[6] >= 63)
+            {
+                Section1[7] = 35;
+            }
+            Section1[8] = Section1[6] + Section1[7];
+            Section2[8] = Section2[6] + Section2[7];
+        
+            Section2[17] = Section2[8];
+            Section1[17] = Section1[8];
+            
+            Section2[18] = Section2[10] + Section2[11] + Section2[12] + Section2[13] + Section2[14] + Section2[15] + Section2[16];
+            Section1[18] = Section1[10] + Section1[11] + Section1[12] + Section1[13] + Section1[14] + Section1[15] + Section1[16];
+            
+            Section2[19] = Section2[18] + Section2[17];
+            Section1[19] = Section1[18] + Section1[17];
+
+    }
+    public boolean scoreIsh(String test)
+    {
+        boolean notRepeat = true;
+        test.toLowerCase();
+        for (int a = 0; a < Section.length; a++)
+        {
+            Check[a] = false;
+        }
+        System.out.println("test2: " + Arrays.toString(whatNumber));
+        if (playerTurn2 == true)
+        {
+            Check = Check1;
+        }
+        else if (playerTurn2 == false)
+        {
+            Check = Check2;
+        }
+        
+        if (test.equals("aces"))
+        {
+            if (Check[0] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 1)
+                    {
+                        Section[0]= Section[0] + 1;
+                    }
+                }
+                Check[0] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("twos"))
+        {
+            if (Check[1] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 2)
+                    {
+                        Section[1]= Section[1] + 2;
+                    }
+                }
+                Check[1] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("threes"))
+        {
+            if (Check[2] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 3)
+                    {
+                        Section[2]= Section[2] + 3;
+                    }
+                }
+                Check[2] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("fours"))
+        {
+            if (Check[3] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 4)
+                    {
+                        Section[3]= Section[3] + 4;;
+                    }
+                }
+                Check[3] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("fives"))
+        {
+            if (Check[4] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 5)
+                    {
+                        Section[4]= Section[4] + 5;;
+                    }
+                }
+                Check[4] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("sixes"))
+        {
+            if (Check[5] == false)
+            {
+                for (int i = 0; i < whatNumber.length; i++)
+                {
+                    if (whatNumber[i] == 6)
+                    {
+                        Section[5]= Section[5] + 6;
+                    }
+                }
+                Check[5] = true;
+            }
+            else { notRepeat = false; }
+        }
+        //https://stackoverflow.com/questions/3858019
+        else if (test.equals("3 of a kind"))
+        {
+            if (Check[10] == false)
+            {
+                int is3of = 0;
+                for (int x = 2; x < 5; x++)
+                {
+                    for (int y = 0; y < x; y++)
+                    {
+                        if(whatNumber[x] == (whatNumber[y]))
+                            is3of++;
+                    }
+                }
+                if (is3of >= 2)
+                    Section[10] = whatNumber[0] + whatNumber[1] + whatNumber[2] + whatNumber[3] +  whatNumber[4];
+                Check[10] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("4 of a kind"))
+        {
+            if (Check[11] == false)
+            {
+                int is4of = 0;
+                for (int x = 2; x < 5; x++)
+                {
+                    for (int y = 0; y < x; y++)
+                    {
+                        if(whatNumber[x] == (whatNumber[y]))
+                            is4of++;
+                    }
+                }
+                if (is4of >= 3)
+                    Section[11] = whatNumber[0] + whatNumber[1] + whatNumber[2] + whatNumber[3] +  whatNumber[4];
+                    Check[11] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("full house"))
+        {
+            if (Check[12] == false)
+            {
+                int pleasenotequal = 0, notequal = 0, is3of = 0, is2of  = 0;
+                for (int x = 2; x < 5; x++)
+                {
+                    for (int y = 0; y < x; y++)
+                    {
+                        if(whatNumber[x] == (whatNumber[y]))
+                        {   is3of++;
+                            notequal = whatNumber[y];
+                        }
+                    }
+                }
+                for (int x = 2; x < 5; x++)
+                {
+                    for (int y = 0; y < x; y++)
+                    {
+                        if(whatNumber[x] == (whatNumber[y]))
+                        {    is2of++;
+                            pleasenotequal = whatNumber[y];
+                        }
+                    }
+                }
+                if ((is3of >= 2) && (is2of >= 1) && (pleasenotequal != notequal))
+                    Section[12] = 25;
+                    Check[12] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("sm. straight"))
+        {
+            if (Check[13] == false)
+            {
+                int count = 0;
+                        for (int i = 0; i < 5; i++) {
+    
+                    if (whatNumber[i] != 0) {
+                        count++;
+                    } else { 
+                        count = 0; // reset count if no match
+                    }
+                    if (count >= 4) { // always check and not just if there is no match
+                        Section[13] = 30;
+                    }
+                }
+                Check[13] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("lg. straight"))
+        {
+            if (Check[14] == false)
+            {
+                int count = 0;
+                        for (int i = 0; i < 5; i++) {
+    
+                    if (whatNumber[i] != 0) {
+                        count++;
+                    } else { 
+                        count = 0; // reset count if no match
+                    }
+                    if (count >= 5) { // always check and not just if there is no match
+                        Section[14] = 40;
+                    }
+                }
+                Check[14] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("yahtzee"))
+        {
+            if (Check[15] == false)
+            {
+                if (whatNumber[0] == whatNumber[1] && whatNumber[0] == whatNumber[2] && whatNumber[0] == whatNumber[3] && whatNumber[0] ==  whatNumber[4]);
+                {
+                    Section[15] = 50;
+                }
+                
+            }
+            else { notRepeat = false; }
+        }
+        else if (test.equals("chance"))
+        {
+            if (Check[16] == false)
+            {
+                Section[16] = whatNumber[0] + whatNumber[1] + whatNumber[2] + whatNumber[3] + whatNumber[4];
+                Check[16] = true;
+            }
+            else { notRepeat = false; }
+        }
+        else notRepeat = false;
+        
+        
+        //upperSection Checks
+        Section2[6] = Section2[0] + Section2[1] + Section2[2] + Section2[3] + Section2[4] + Section2[5];
+        Section1[6] = Section1[0] + Section1[1] + Section1[2] + Section1[3] + Section1[4] + Section1[5];
+
+        if (Section2[6] >= 63)
+        {
+            Section2[7] = 35;
+        }
+        if (Section1[6] >= 63)
+        {
+            Section1[7] = 35;
+        }
+        Section1[8] = Section1[6] + Section1[7];
+        Section2[8] = Section2[6] + Section2[7];
+        repaint();
+
+        if (playerTurn2 == true)
+        {
+        for (int a = 0; a < Section.length; a++)
+        {
+            if  (Section1[a] == 0)
+            {
+                Section1[a] = Section[a];
+            }
+        }
+        }
+        else if (playerTurn2 == false)
+        {
+        for (int a = 0; a < Section.length; a++)
+        {
+            if (Section2[a] == 0)
+            {
+                Section2[a] = Section[a];
+            }
+        }
+        }
+        for (int b = 0; b < Section.length; b++)
+        {
+            Section[b] =  0;
+        }
+        if (playerTurn2 == true)
+        {
+            Check1 = Check;
+        }
+        else if (playerTurn2 == false)
+        {
+            Check2 = Check;
+        }
+        System.out.println("test: s" + Arrays.toString(Section));
+        System.out.println("test: s1" + Arrays.toString(Section1));
+        System.out.println("test: s2" + Arrays.toString(Section2));
+        
+        System.out.println("test4: " + Arrays.toString(Check));
+        System.out.println("test5: " + Arrays.toString(Check1));
+        System.out.println("test6: " + Arrays.toString(Check2));
+        lock[0] = false;
+        lock[1] = false;
+        lock[2] = false;
+        lock[3] = false;
+        lock[4] = false;
+            
+        
+        return notRepeat;
+    }
+}
+    
